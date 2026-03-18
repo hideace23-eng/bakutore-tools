@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>バクトレ LINE返信アシスタント</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -13,54 +13,78 @@
     --radius: 14px; --radius-sm: 8px;
   }
   body { font-family: -apple-system, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', sans-serif; background: var(--gray-bg); color: var(--text); min-height: 100vh; }
-  header { background: var(--green); padding: 20px 20px 18px; position: sticky; top: 0; z-index: 10; }
-  header h1 { font-size: 18px; font-weight: 600; color: white; letter-spacing: -0.3px; }
-  header p { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
-  .container { max-width: 560px; margin: 0 auto; padding: 20px 16px 40px; }
-  .card { background: var(--white); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; border: 1px solid var(--gray-border); }
-  .card-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
-  textarea { width: 100%; min-height: 130px; border: 1.5px solid var(--gray-border); border-radius: var(--radius-sm); padding: 14px; font-size: 16px; font-family: inherit; color: var(--text); background: var(--gray-bg); resize: vertical; line-height: 1.6; transition: border-color 0.15s; -webkit-appearance: none; }
+  header { background: var(--green); padding: 18px 20px 16px; }
+  header h1 { font-size: 17px; font-weight: 700; color: white; letter-spacing: -0.3px; }
+  header p { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+  .container { max-width: 540px; margin: 0 auto; padding: 20px 16px 48px; }
+
+  .card { background: var(--white); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; border: 1px solid var(--gray-border); }
+  .card-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+
+  textarea {
+    width: 100%; min-height: 140px;
+    border: 1.5px solid var(--gray-border); border-radius: var(--radius-sm);
+    padding: 14px; font-size: 16px; font-family: inherit; color: var(--text);
+    background: var(--gray-bg); resize: vertical; line-height: 1.6;
+    transition: border-color 0.15s; -webkit-appearance: none;
+  }
   textarea:focus { outline: none; border-color: var(--green-mid); background: var(--white); }
-  textarea::placeholder { color: #aaa; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-  .select-wrap { background: var(--white); border-radius: var(--radius); padding: 16px; border: 1px solid var(--gray-border); }
-  .select-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
-  select { width: 100%; padding: 10px 12px; border: 1.5px solid var(--gray-border); border-radius: var(--radius-sm); font-size: 15px; font-family: inherit; background: var(--gray-bg); color: var(--text); -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b66' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; cursor: pointer; }
-  select:focus { outline: none; border-color: var(--green-mid); }
-  .generate-btn { width: 100%; padding: 17px; background: var(--green); color: white; border: none; border-radius: var(--radius); font-size: 17px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.15s; -webkit-appearance: none; margin-bottom: 16px; }
-  .generate-btn:active { transform: scale(0.98); background: #155e39; }
-  .generate-btn:disabled { background: #aaa; cursor: not-allowed; transform: none; }
-  .result-card { background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--green); overflow: hidden; margin-bottom: 16px; display: none; }
-  .result-header { background: var(--green-light); padding: 12px 16px; }
-  .result-header span { font-size: 12px; font-weight: 600; color: var(--green); text-transform: uppercase; letter-spacing: 0.08em; }
-  .result-body { padding: 18px 16px; font-size: 16px; line-height: 1.8; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+  textarea::placeholder { color: #bbb; font-size: 15px; }
+
+  .btn-main {
+    width: 100%; padding: 18px; background: var(--green); color: white;
+    border: none; border-radius: var(--radius); font-size: 17px; font-weight: 700;
+    font-family: inherit; cursor: pointer; transition: all 0.15s;
+    -webkit-appearance: none; margin-bottom: 14px; letter-spacing: 0.02em;
+  }
+  .btn-main:active { transform: scale(0.98); background: #155e39; }
+  .btn-main:disabled { background: #b0b0a8; cursor: not-allowed; transform: none; }
+
+  .result-card {
+    background: var(--white); border-radius: var(--radius);
+    border: 2px solid var(--green); overflow: hidden; margin-bottom: 14px; display: none;
+  }
+  .result-header { background: var(--green-light); padding: 11px 16px; display: flex; align-items: center; gap: 6px; }
+  .result-header span { font-size: 12px; font-weight: 700; color: var(--green); letter-spacing: 0.05em; }
+  .result-body { padding: 18px 16px; font-size: 16px; line-height: 1.85; color: var(--text); white-space: pre-wrap; word-break: break-word; }
   .result-actions { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--gray-border); }
-  .result-actions button { padding: 14px; border: none; background: transparent; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; transition: background 0.1s; -webkit-appearance: none; }
+  .result-actions button {
+    padding: 15px; border: none; background: transparent;
+    font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer;
+    transition: background 0.1s; -webkit-appearance: none;
+  }
   .result-actions button:first-child { border-right: 1px solid var(--gray-border); color: var(--green); }
   .result-actions button:last-child { color: var(--text-muted); }
   .result-actions button:active { background: var(--gray-bg); }
-  .error-card { background: #fff2f2; border: 1.5px solid #ffcccc; border-radius: var(--radius-sm); padding: 14px 16px; color: #cc3333; font-size: 14px; line-height: 1.5; margin-bottom: 16px; display: none; }
-  .loader { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 24px; display: none; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-mid); animation: bounce 1s infinite; }
-  .dot:nth-child(2) { animation-delay: 0.15s; }
-  .dot:nth-child(3) { animation-delay: 0.3s; }
-  @keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-8px);opacity:1} }
-  .api-section { background: #fffbe6; border: 1.5px solid #ffe066; border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 16px; font-size: 13px; color: #7a6500; line-height: 1.6; }
-  .api-section input { margin-top: 10px; width: 100%; padding: 10px 12px; border: 1.5px solid #ffe066; border-radius: var(--radius-sm); font-size: 14px; font-family: monospace; background: white; color: var(--text); }
+
+  .loader { display: none; align-items: center; justify-content: center; gap: 7px; padding: 28px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green-mid); animation: bounce 1s infinite; }
+  .dot:nth-child(2) { animation-delay: 0.18s; }
+  .dot:nth-child(3) { animation-delay: 0.36s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-9px);opacity:1} }
+
+  .error-card { background: #fff2f2; border: 1.5px solid #ffcccc; border-radius: var(--radius-sm); padding: 13px 15px; color: #c0392b; font-size: 14px; margin-bottom: 14px; display: none; line-height: 1.5; }
+
+  .api-section { background: #fffbe6; border: 1.5px solid #f0d060; border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 14px; font-size: 13px; color: #7a6200; line-height: 1.6; }
+  .api-section strong { display: block; margin-bottom: 4px; font-size: 14px; }
+  .api-section input { margin-top: 10px; width: 100%; padding: 11px 13px; border: 1.5px solid #f0d060; border-radius: var(--radius-sm); font-size: 14px; font-family: monospace; background: white; color: var(--text); -webkit-appearance: none; }
   .api-section input:focus { outline: none; border-color: var(--green-mid); }
-  .api-btn { margin-top: 8px; padding: 8px 16px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
-  .powered { text-align: center; font-size: 11px; color: #bbb; padding-top: 8px; }
+  .api-btn { margin-top: 10px; padding: 9px 18px; background: var(--green); color: white; border: none; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+  .hint { font-size: 12px; color: var(--text-muted); text-align: center; padding: 4px 0 8px; }
+  .powered { text-align: center; font-size: 11px; color: #c0bfb8; padding-top: 4px; }
 </style>
 </head>
 <body>
 <header>
   <h1>💬 LINE返信アシスタント</h1>
-  <p>バクトレ世田谷区 経堂店</p>
+  <p>バクトレ — お客様対応ツール</p>
 </header>
-<div class="container">
 
+<div class="container">
   <div class="api-section" id="api-section">
-    <strong>初回設定：APIキーを入力してください</strong><br>一度入力すれば保存されます。
+    <strong>🔑 初回設定：APIキーを入力してください</strong>
+    一度入力すれば次回から不要です。
     <input type="password" id="api-input" placeholder="sk-ant-..." />
     <button class="api-btn" onclick="saveKey()">保存する</button>
   </div>
@@ -70,32 +94,11 @@
     <textarea id="input-msg" placeholder="お客様から届いたLINEをここにペーストしてください"></textarea>
   </div>
 
-  <div class="row">
-    <div class="select-wrap">
-      <div class="select-label">スタッフ</div>
-      <select id="staff">
-        <option value="共通">共通（誰でもOK）</option>
-        <option value="ヒデ（塚田）">ヒデ（塚田）</option>
-        <option value="ユウキ">ユウキ</option>
-        <option value="レンゴ">レンゴ</option>
-      </select>
-    </div>
-    <div class="select-wrap">
-      <div class="select-label">種類</div>
-      <select id="type">
-        <option value="自動判断">自動判断</option>
-        <option value="体験予約・日程調整">体験予約・日程</option>
-        <option value="料金・プランの質問">料金・プラン</option>
-        <option value="キャンセル・変更">キャンセル・変更</option>
-        <option value="体の悩み・相談">体の悩み・相談</option>
-        <option value="入会後のやりとり">入会後のやりとり</option>
-        <option value="その他">その他</option>
-      </select>
-    </div>
-  </div>
+  <p class="hint">貼り付けてボタンを押すだけでOK</p>
 
   <div class="error-card" id="error-card"></div>
-  <button class="generate-btn" id="gen-btn" onclick="generate()">返信案を生成する</button>
+
+  <button class="btn-main" id="gen-btn" onclick="generate()">返信案を生成する</button>
 
   <div class="result-card" id="result-card">
     <div class="result-header"><span>✅ 返信案</span></div>
@@ -103,7 +106,7 @@
     <div class="result-body" id="result-text"></div>
     <div class="result-actions">
       <button onclick="copyText()">コピー</button>
-      <button onclick="generate()">もう一度</button>
+      <button onclick="regenerate()">もう一度</button>
     </div>
   </div>
 
@@ -111,43 +114,86 @@
 </div>
 
 <script>
-const SYSTEM = `あなたはパーソナルトレーニングジム「バクトレ世田谷区 経堂店」（株式会社イノセント運営）のスタッフとして、お客様へLINEで返信するアシスタントです。
+const SYSTEM = `あなたはアクロバットパーソナルスクール「バクトレ」（株式会社イノセント運営）のスタッフとして、お客様へLINEで返信するアシスタントです。
 
-【バクトレについて】
-- 専門：バク転・アクロバット・体操のパーソナルトレーニング
-- 完全パーソナル指導（グループレッスン不可。家族・友人との2人受講は可）
-- 営業時間：10〜22時（最終受付21時）／平日・土日祝 対応
+【店舗情報】
+- バクトレ世田谷区経堂店（世田谷区経堂1-26-3ルストレージ経堂304）
+- バクトレ世田谷区喜多見店（世田谷区喜多見8-7-3ポヌール2階）
+- バクトレ港区白金高輪店
+- バクトレ大阪城東区店
+営業時間：10〜22時（最終受付21時）／平日・土日祝 対応
+※大阪城東区店はランク制度対象外
 
-【レッスンプラン】
-- パーソナル：50分 または 80分
-- ペア（家族・友人と）：50分 または 80分
+【バクトレとは】
+バク転・アクロバット・体操のパーソナルトレーニングスクール。完全パーソナル指導（グループレッスン不可。家族・友人との2人受講は可能）。
 
-【体験申込みに必要な情報】
-①お名前 ②身長・体重（補助の関係で必須） ③年齢 ④電話番号
-⑤希望日時（第1〜第3希望） ⑥プラン（パーソナル or ペア、50分 or 80分）
-⑧悩み・相談（任意）
+【習得できる技（スキルツリー）】
+倒立を土台に以下の技を習得できる：
+■前方系：前転→飛び込み前転→前宙→前宙ひねり、開脚前転・伸膝前転、倒立前転→倒立ブリッジ→前方転回ハンドスプリング→転宙
+■後方系：ブリッジ→後方転回、後転→開脚後転→背倒立→後転倒立、ジャンプ→バク転→連続バク転、ジャンプ→バク宙→ロンダートバク宙→伸身宙返り→バク宙ひねり、ロンダート→ロンダートバク転
+■側方系：側転→片手側転→側宙（エアリアル）、ロンダート、ヘリコプテイロ・サイドフリップ・ゲイナー・コーク
 
-【重要なルール・よくある注意点】
+【初回体験料金（1名分）】
+- 1人：50分6,000円・80分9,000円
+- 1人（学割）：50分5,000円・80分8,000円
+- 2人グループ：50分3,500円・80分5,500円（1名分）
+※2名の場合は2名分のお支払い
+
+【入会金】
+- 通常：20,000円
+- 体験当日入会の場合：10,000円（半額）クーポンコード「10000」
+- ご家族2名：12,000円、3人グループ：+4,000円
+- 支払い：クレジット・PayPay・現金
+
+【ランク制度（3/23〜・世田谷・港区店対象）】
+3ランク：ブロンズ・シルバー・ゴールド（大人気No.1）
+
+各ランク特徴：
+- ゴールド：予約無制限・全講師受講可・有効期限無期限・1日前22時まで予約可・最もおすすめ
+- シルバー：予約3枠まで・シルバー以下講師受講可・有効期限6ヶ月・1日前22時まで予約可
+- ブロンズ：予約1枠まで・ブロンズ講師のみ・有効期限4ヶ月・2日前22時まで予約可
+
+ゴールド料金（1人/1名分）：単発9,000円/12,000円、4回35,000円/47,000円、8回63,000円/84,000円、12回94,500円/126,000円、24回180,000円/240,000円（50分/80分）
+シルバー料金（1人/1名分）：単発7,000円/10,000円、4回27,000円/39,000円、8回49,000円/70,000円、12回73,500円/105,000円、24回140,000円/200,000円
+ブロンズ料金（1人/1名分）：単発6,000円/9,000円、4回23,000円/35,000円、8回42,000円/63,000円、12回63,000円/94,500円、24回120,000円/180,000円
+グループ2人は上記より割安。2名分の支払いが必要。
+
+【値上げ前キャンペーン（3/20まで）】
+3/23よりランク制度移行（実質値上げ）。3/20までの購入で旧価格が適用。
+
+旧料金（〜3/22・大阪店も現在この料金）：
+1人：単発7,000円/10,000円、4回27,000円/39,000円、8回49,000円/70,000円、12回73,500円/105,000円、24回140,000円/200,000円（50分/80分）
+
+【予約・キャンセルポリシー】
+- 予約は予約システム（hacomono）から
+- キャンセル：24時間前まで無料。24時間以内：チケット1回消化。無断：2回消化
+- スケジュール開放：毎月15日24時に翌月末分が開放
+
+【チケット・その他ルール】
 - 未成年は初回のみ保護者と来店必須（同意書・決済確認あり）
-- 土日祝は予約が非常に埋まりやすい→早めの返信を促す
-- 他店舗（練馬店など）とは運営元が異なり再入会手続きが必要
-- 料金・具体的な空き時間は「確認してご連絡いたします」と回答する
-- 無断キャンセルには毅然と対応する
+- 講師は担当制なし・指名制（指名料別途）
+- 保険未加入のため万が一の怪我は自己責任
+- 初回用LINEと連絡用LINEは別（入会後は連絡用LINEを使う）
+- チケット・会員資格の他人への譲渡・貸与は不可（家族間シェアはOK）
 
-【スタッフの口調・スタイル（実際の会話履歴より）】
-- 丁寧で親しみやすく、温かみがある
-- 絵文字は自然に1〜2個（😊🙇など）
-- よく使う言い回し：
-  「お問い合わせありがとうございます。数あるスタジオの中からお選びいただき非常に嬉しいです😊」
-  「遠慮なくお知らせください」「ご希望に沿えるよう対応いたします」
-  「ご返信ありがとうございます」「早速のご記入ありがとうございます」
-- 日程提案は「①◯月◯日 ◯時◯◯分」の形式で番号付きで提示
+【ご紹介特典】
+- 紹介者：50分チケット1枚プレゼント
+- 紹介されたお友達：初回1,000円割引
+
+【スタッフの口調・スタイル】
+- 丁寧で親しみやすく、温かみがある。硬すぎず自然に
+- 絵文字は1〜2個まで（😊🙇など）
+- よく使う言い回し：「お問い合わせありがとうございます。数あるスタジオの中からお選びいただき非常に嬉しいです😊」「遠慮なくお知らせください」
+- 日程提案は「①◯月◯日 ◯時」の番号付き形式
 - 200文字前後を目安に簡潔に
+- 具体的な空き時間は「確認してご連絡いたします」と回答
 
-返信文のみを出力してください。説明・前置きは不要です。`;
+返信文のみを出力してください。説明・前置きは一切不要です。`;
 
 function init() {
-  if (localStorage.getItem('baku_key')) document.getElementById('api-section').style.display = 'none';
+  if (localStorage.getItem('baku_key')) {
+    document.getElementById('api-section').style.display = 'none';
+  }
 }
 
 function saveKey() {
@@ -163,15 +209,19 @@ function hideError() { document.getElementById('error-card').style.display = 'no
 async function generate() {
   const msg = document.getElementById('input-msg').value.trim();
   if (!msg) { showError('お客様からのメッセージをペーストしてください'); return; }
-  const key = localStorage.getItem('baku_key');
-  if (!key) { document.getElementById('api-section').style.display = 'block'; showError('APIキーを設定してください'); return; }
 
-  const staff = document.getElementById('staff').value;
-  const type = document.getElementById('type').value;
+  const key = localStorage.getItem('baku_key');
+  if (!key) {
+    document.getElementById('api-section').style.display = 'block';
+    showError('まずAPIキーを設定してください');
+    return;
+  }
 
   hideError();
   const btn = document.getElementById('gen-btn');
-  btn.disabled = true; btn.textContent = '生成中...';
+  btn.disabled = true;
+  btn.textContent = '生成中...';
+
   const card = document.getElementById('result-card');
   card.style.display = 'block';
   document.getElementById('result-text').textContent = '';
@@ -190,27 +240,41 @@ async function generate() {
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
         system: SYSTEM,
-        messages: [{ role: 'user', content: `以下のお客様LINEへの返信文を作成してください。\n対応スタッフ：${staff}\n問い合わせ種類：${type}\n\n【お客様メッセージ】\n${msg}` }]
+        messages: [{ role: 'user', content: `以下のお客様からのLINEに対して、バクトレのスタッフとして適切な返信文を作成してください：\n\n${msg}` }]
       })
     });
+
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error?.message || '生成に失敗しました');
+
     const text = data.content?.find(b => b.type === 'text')?.text || '';
     document.getElementById('loader').style.display = 'none';
     document.getElementById('result-text').textContent = text;
+
   } catch(e) {
     document.getElementById('loader').style.display = 'none';
     card.style.display = 'none';
-    showError('エラー: ' + (e.message || '生成に失敗しました'));
+    showError('エラー: ' + (e.message || '通信に失敗しました。もう一度お試しください。'));
   } finally {
-    btn.disabled = false; btn.textContent = '返信案を生成する';
+    btn.disabled = false;
+    btn.textContent = '返信案を生成する';
   }
 }
 
+function regenerate() { generate(); }
+
 function copyText() {
-  navigator.clipboard.writeText(document.getElementById('result-text').textContent).then(() => {
-    const b = event.target; b.textContent = 'コピーしました ✓';
-    setTimeout(() => b.textContent = 'コピー', 2000);
+  const t = document.getElementById('result-text').textContent;
+  navigator.clipboard.writeText(t).then(() => {
+    const b = event.target;
+    const orig = b.textContent;
+    b.textContent = 'コピーしました ✓';
+    setTimeout(() => b.textContent = orig, 2000);
+  }).catch(() => {
+    const range = document.createRange();
+    range.selectNodeContents(document.getElementById('result-text'));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
   });
 }
 
