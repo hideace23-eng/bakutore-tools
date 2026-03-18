@@ -26,6 +26,20 @@ async function callClaude(userMessage) {
   return data.content?.find((b) => b.type === 'text')?.text || '';
 }
 
+async function showLoading(userId) {
+  await fetch('https://api.line.me/v2/bot/chat/loading/start', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + process.env.LINE_CHANNEL_ACCESS_TOKEN,
+    },
+    body: JSON.stringify({
+      chatId: userId,
+      loadingSeconds: 30,
+    }),
+  });
+}
+
 async function replyToLine(replyToken, text) {
   await fetch('https://api.line.me/v2/bot/message/reply', {
     method: 'POST',
@@ -45,7 +59,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ status: 'ok' });
   }
 
-  // 署名検証をスキップして直接処理（Vercelのbodyパース対応）
   const body = req.body;
   const events = body.events || [];
 
@@ -53,7 +66,11 @@ export default async function handler(req, res) {
     if (event.type !== 'message' || event.message.type !== 'text') continue;
     const userMessage = event.message.text;
     const replyToken = event.replyToken;
+    const userId = event.source.userId;
+
     try {
+      // ローディングアニメーションを表示（最大30秒）
+      await showLoading(userId);
       const reply = await callClaude(userMessage);
       await replyToLine(replyToken, reply);
     } catch (e) {
