@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>バクトレ LINE返信アシスタント</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green: #1a7a4a; --green-light: #e8f5ee; --green-mid: #2ea86a;
+    --gray-bg: #f5f5f3; --gray-border: #e0ddd8;
+    --text: #1a1a18; --text-muted: #6b6b66; --white: #ffffff;
+    --radius: 14px; --radius-sm: 8px;
+  }
+  body { font-family: -apple-system, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', sans-serif; background: var(--gray-bg); color: var(--text); min-height: 100vh; }
+  header { background: var(--green); padding: 20px 20px 18px; position: sticky; top: 0; z-index: 10; }
+  header h1 { font-size: 18px; font-weight: 600; color: white; letter-spacing: -0.3px; }
+  header p { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+  .container { max-width: 560px; margin: 0 auto; padding: 20px 16px 40px; }
+  .card { background: var(--white); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; border: 1px solid var(--gray-border); }
+  .card-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+  textarea { width: 100%; min-height: 130px; border: 1.5px solid var(--gray-border); border-radius: var(--radius-sm); padding: 14px; font-size: 16px; font-family: inherit; color: var(--text); background: var(--gray-bg); resize: vertical; line-height: 1.6; transition: border-color 0.15s; -webkit-appearance: none; }
+  textarea:focus { outline: none; border-color: var(--green-mid); background: var(--white); }
+  textarea::placeholder { color: #aaa; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .select-wrap { background: var(--white); border-radius: var(--radius); padding: 16px; border: 1px solid var(--gray-border); }
+  .select-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+  select { width: 100%; padding: 10px 12px; border: 1.5px solid var(--gray-border); border-radius: var(--radius-sm); font-size: 15px; font-family: inherit; background: var(--gray-bg); color: var(--text); -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b66' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; cursor: pointer; }
+  select:focus { outline: none; border-color: var(--green-mid); }
+  .generate-btn { width: 100%; padding: 17px; background: var(--green); color: white; border: none; border-radius: var(--radius); font-size: 17px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.15s; -webkit-appearance: none; margin-bottom: 16px; }
+  .generate-btn:active { transform: scale(0.98); background: #155e39; }
+  .generate-btn:disabled { background: #aaa; cursor: not-allowed; transform: none; }
+  .result-card { background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--green); overflow: hidden; margin-bottom: 16px; display: none; }
+  .result-header { background: var(--green-light); padding: 12px 16px; }
+  .result-header span { font-size: 12px; font-weight: 600; color: var(--green); text-transform: uppercase; letter-spacing: 0.08em; }
+  .result-body { padding: 18px 16px; font-size: 16px; line-height: 1.8; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+  .result-actions { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--gray-border); }
+  .result-actions button { padding: 14px; border: none; background: transparent; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; transition: background 0.1s; -webkit-appearance: none; }
+  .result-actions button:first-child { border-right: 1px solid var(--gray-border); color: var(--green); }
+  .result-actions button:last-child { color: var(--text-muted); }
+  .result-actions button:active { background: var(--gray-bg); }
+  .error-card { background: #fff2f2; border: 1.5px solid #ffcccc; border-radius: var(--radius-sm); padding: 14px 16px; color: #cc3333; font-size: 14px; line-height: 1.5; margin-bottom: 16px; display: none; }
+  .loader { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 24px; display: none; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-mid); animation: bounce 1s infinite; }
+  .dot:nth-child(2) { animation-delay: 0.15s; }
+  .dot:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-8px);opacity:1} }
+  .api-section { background: #fffbe6; border: 1.5px solid #ffe066; border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 16px; font-size: 13px; color: #7a6500; line-height: 1.6; }
+  .api-section input { margin-top: 10px; width: 100%; padding: 10px 12px; border: 1.5px solid #ffe066; border-radius: var(--radius-sm); font-size: 14px; font-family: monospace; background: white; color: var(--text); }
+  .api-section input:focus { outline: none; border-color: var(--green-mid); }
+  .api-btn { margin-top: 8px; padding: 8px 16px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .powered { text-align: center; font-size: 11px; color: #bbb; padding-top: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>💬 LINE返信アシスタント</h1>
+  <p>バクトレ世田谷区 経堂店</p>
+</header>
+<div class="container">
+
+  <div class="api-section" id="api-section">
+    <strong>初回設定：APIキーを入力してください</strong><br>一度入力すれば保存されます。
+    <input type="password" id="api-input" placeholder="sk-ant-..." />
+    <button class="api-btn" onclick="saveKey()">保存する</button>
+  </div>
+
+  <div class="card">
+    <div class="card-label">お客様からのメッセージ</div>
+    <textarea id="input-msg" placeholder="お客様から届いたLINEをここにペーストしてください"></textarea>
+  </div>
+
+  <div class="row">
+    <div class="select-wrap">
+      <div class="select-label">スタッフ</div>
+      <select id="staff">
+        <option value="共通">共通（誰でもOK）</option>
+        <option value="ヒデ（塚田）">ヒデ（塚田）</option>
+        <option value="ユウキ">ユウキ</option>
+        <option value="レンゴ">レンゴ</option>
+      </select>
+    </div>
+    <div class="select-wrap">
+      <div class="select-label">種類</div>
+      <select id="type">
+        <option value="自動判断">自動判断</option>
+        <option value="体験予約・日程調整">体験予約・日程</option>
+        <option value="料金・プランの質問">料金・プラン</option>
+        <option value="キャンセル・変更">キャンセル・変更</option>
+        <option value="体の悩み・相談">体の悩み・相談</option>
+        <option value="入会後のやりとり">入会後のやりとり</option>
+        <option value="その他">その他</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="error-card" id="error-card"></div>
+  <button class="generate-btn" id="gen-btn" onclick="generate()">返信案を生成する</button>
+
+  <div class="result-card" id="result-card">
+    <div class="result-header"><span>✅ 返信案</span></div>
+    <div class="loader" id="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="result-body" id="result-text"></div>
+    <div class="result-actions">
+      <button onclick="copyText()">コピー</button>
+      <button onclick="generate()">もう一度</button>
+    </div>
+  </div>
+
+  <p class="powered">Powered by Claude AI</p>
+</div>
+
+<script>
+const SYSTEM = `あなたはパーソナルトレーニングジム「バクトレ世田谷区 経堂店」（株式会社イノセント運営）のスタッフとして、お客様へLINEで返信するアシスタントです。
+
+【バクトレについて】
+- 専門：バク転・アクロバット・体操のパーソナルトレーニング
+- 完全パーソナル指導（グループレッスン不可。家族・友人との2人受講は可）
+- 営業時間：10〜22時（最終受付21時）／平日・土日祝 対応
+
+【レッスンプラン】
+- パーソナル：50分 または 80分
+- ペア（家族・友人と）：50分 または 80分
+
+【体験申込みに必要な情報】
+①お名前 ②身長・体重（補助の関係で必須） ③年齢 ④電話番号
+⑤希望日時（第1〜第3希望） ⑥プラン（パーソナル or ペア、50分 or 80分）
+⑧悩み・相談（任意）
+
+【重要なルール・よくある注意点】
+- 未成年は初回のみ保護者と来店必須（同意書・決済確認あり）
+- 土日祝は予約が非常に埋まりやすい→早めの返信を促す
+- 他店舗（練馬店など）とは運営元が異なり再入会手続きが必要
+- 料金・具体的な空き時間は「確認してご連絡いたします」と回答する
+- 無断キャンセルには毅然と対応する
+
+【スタッフの口調・スタイル（実際の会話履歴より）】
+- 丁寧で親しみやすく、温かみがある
+- 絵文字は自然に1〜2個（😊🙇など）
+- よく使う言い回し：
+  「お問い合わせありがとうございます。数あるスタジオの中からお選びいただき非常に嬉しいです😊」
+  「遠慮なくお知らせください」「ご希望に沿えるよう対応いたします」
+  「ご返信ありがとうございます」「早速のご記入ありがとうございます」
+- 日程提案は「①◯月◯日 ◯時◯◯分」の形式で番号付きで提示
+- 200文字前後を目安に簡潔に
+
+返信文のみを出力してください。説明・前置きは不要です。`;
+
+function init() {
+  if (localStorage.getItem('baku_key')) document.getElementById('api-section').style.display = 'none';
+}
+
+function saveKey() {
+  const v = document.getElementById('api-input').value.trim();
+  if (!v.startsWith('sk-')) { alert('正しいAPIキーを入力してください（sk-ant-... で始まるもの）'); return; }
+  localStorage.setItem('baku_key', v);
+  document.getElementById('api-section').style.display = 'none';
+}
+
+function showError(m) { const e = document.getElementById('error-card'); e.textContent = m; e.style.display = 'block'; }
+function hideError() { document.getElementById('error-card').style.display = 'none'; }
+
+async function generate() {
+  const msg = document.getElementById('input-msg').value.trim();
+  if (!msg) { showError('お客様からのメッセージをペーストしてください'); return; }
+  const key = localStorage.getItem('baku_key');
+  if (!key) { document.getElementById('api-section').style.display = 'block'; showError('APIキーを設定してください'); return; }
+
+  const staff = document.getElementById('staff').value;
+  const type = document.getElementById('type').value;
+
+  hideError();
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true; btn.textContent = '生成中...';
+  const card = document.getElementById('result-card');
+  card.style.display = 'block';
+  document.getElementById('result-text').textContent = '';
+  document.getElementById('loader').style.display = 'flex';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM,
+        messages: [{ role: 'user', content: `以下のお客様LINEへの返信文を作成してください。\n対応スタッフ：${staff}\n問い合わせ種類：${type}\n\n【お客様メッセージ】\n${msg}` }]
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error?.message || '生成に失敗しました');
+    const text = data.content?.find(b => b.type === 'text')?.text || '';
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('result-text').textContent = text;
+  } catch(e) {
+    document.getElementById('loader').style.display = 'none';
+    card.style.display = 'none';
+    showError('エラー: ' + (e.message || '生成に失敗しました'));
+  } finally {
+    btn.disabled = false; btn.textContent = '返信案を生成する';
+  }
+}
+
+function copyText() {
+  navigator.clipboard.writeText(document.getElementById('result-text').textContent).then(() => {
+    const b = event.target; b.textContent = 'コピーしました ✓';
+    setTimeout(() => b.textContent = 'コピー', 2000);
+  });
+}
+
+init();
+</script>
+</body>
+</html>
