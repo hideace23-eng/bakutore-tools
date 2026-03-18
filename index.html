@@ -44,23 +44,23 @@
   .api-section strong { display: block; margin-bottom: 4px; font-size: 14px; }
   .api-section input { margin-top: 10px; width: 100%; padding: 11px 13px; border: 1.5px solid #f0d060; border-radius: var(--radius-sm); font-size: 14px; font-family: monospace; background: white; color: var(--text); -webkit-appearance: none; }
   .api-section input:focus { outline: none; border-color: var(--green-mid); }
-  .api-btn { margin-top: 10px; padding: 9px 18px; background: var(--green); color: white; border: none; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .api-btn { margin-top: 10px; padding: 9px 18px; background: var(--green); color: white; border: none; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; display: block; }
   .hint { font-size: 12px; color: var(--text-muted); text-align: center; padding: 4px 0 8px; }
   .powered { text-align: center; font-size: 11px; color: #c0bfb8; padding-top: 4px; }
 </style>
 </head>
 <body>
 <header>
-  <h1>💬 LINE返信アシスタント</h1>
+  <h1>LINE返信アシスタント</h1>
   <p>バクトレ — お客様対応ツール</p>
 </header>
 
 <div class="container">
   <div class="api-section" id="api-section">
-    <strong>🔑 初回設定：APIキーを入力してください</strong>
+    <strong>初回設定：APIキーを入力してください</strong>
     一度入力すれば次回から不要です。
     <input type="password" id="api-input" placeholder="sk-ant-..." />
-    <button class="api-btn" onclick="saveKey()">保存する</button>
+    <button class="api-btn" id="save-btn">保存する</button>
   </div>
 
   <div class="card">
@@ -72,15 +72,15 @@
 
   <div class="error-card" id="error-card"></div>
 
-  <button class="btn-main" id="gen-btn" onclick="generate()">返信案を生成する</button>
+  <button class="btn-main" id="gen-btn">返信案を生成する</button>
 
   <div class="result-card" id="result-card">
-    <div class="result-header"><span>✅ 返信案</span></div>
+    <div class="result-header"><span>返信案</span></div>
     <div class="loader" id="loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
     <div class="result-body" id="result-text"></div>
     <div class="result-actions">
-      <button onclick="copyText()">コピー</button>
-      <button onclick="generate()">もう一度</button>
+      <button id="copy-btn">コピー</button>
+      <button id="retry-btn">もう一度</button>
     </div>
   </div>
 
@@ -88,210 +88,173 @@
 </div>
 
 <script>
-const SYSTEM = `あなたはアクロバット教室「バクトレ」の新規体験一次対応スタッフBotです。
-新規体験希望者に対して、不安を和らげ、内容を整理し、体験日時を確定するサポートをします。
-営業感・テンプレ感・AI感は出さず、「人がLINEで返信している印象」を最優先にします。
-
-【店舗情報・支払い方法】
-■バクトレ世田谷区経堂店（世田谷区経堂1-26-3 ルストレージ経堂304）
-　支払い：クレジットカードのみ（タッチ決済・差し込み対応）
-■バクトレ世田谷区喜多見店（世田谷区喜多見8-7-3 ポヌール2階）
-　支払い：クレジットカードのみ（タッチ決済・差し込み対応）
-■バクトレ港区白金高輪店
-　支払い：クレジットカードのみ（タッチ決済・差し込み対応）
-■バクトレ大阪城東区店
-　支払い：クレジットカード・PayPay・現金すべて対応
-　※大阪城東区店のみランク制度対象外
-営業時間：10〜22時（最終受付21時）／平日・土日祝 対応
-※3/23以降は原則クレジットカードのみ（世田谷・港区店）
-
-【習得できる技（スキルツリー）】
-倒立を土台に：前転・飛び込み前転・前宙・前宙ひねり・バク転・バク宙・ロンダート・側転・側宙（エアリアル）・ロンダートバク転・ロンダートバク宙・伸身宙返り など
-
-【初回体験料金（1名分）】
-- 1人：50分6,000円・80分9,000円
-- 1人（学割）：50分5,000円・80分8,000円
-- 2人グループ：50分3,500円・80分5,500円
-※2名の場合は2名分のお支払い
-
-【入会金】
-- 通常：20,000円 → 体験当日入会なら10,000円（半額）
-- ご家族2名：12,000円、3人グループ：+4,000円
-
-【ランク制度（3/23〜・世田谷・港区店対象）】
-ゴールド（人気No.1）：予約無制限・有効期限無期限
-シルバー：予約3枠まで・有効期限6ヶ月
-ブロンズ：予約1枠まで・有効期限4ヶ月
-
-【キャンセルポリシー】
-24時間前まで無料。24時間以内はチケット1回消化。無断は2回消化。
-
-【その他ルール】
-- 未成年は初回のみ保護者と来店必須（同意書・決済確認あり）
-- 講師は担当制なし・指名制（指名料別途）
-- チケット・会員資格の他人への譲渡・貸与は不可（家族間シェアはOK）
-- 初回用LINEと連絡用LINEは別（入会後は連絡用LINEを使う）
-
-【ご紹介特典】
-紹介者：50分チケット1枚プレゼント／紹介されたお友達：初回1,000円割引
-
-【大原則】
-・お客様向け返信は「見出し3つ固定（■）」で短く分かりやすく
-・曜日は絶対に表示しない
-・強調（太字、装飾、カッコ強調、記号盛り）は禁止
-・断定しすぎない（決定感を出さず、自然な会話文で）
-・お客様向け文面では「バク転」より「アクロバット」の表現を優先する
-
-【プラン判断ルール】
-・名前が1人分であれば「マンツーマン」前提で案内する
-・グループ希望の記載があっても名前が1名なら個人（マンツーマン）として案内し、「グループはご家族・ご友人など面識のある方同士のみ可能」を添える
-・12歳までのお子様が80分希望の場合は集中力を考慮し「まずは50分」を自然に提案する
-
-【ジャンル別テンプレ（⑧に該当キーワードがある場合のみ使用）】
-▼チア（チアダンス・チアリーディング）
-チアダンスやチアリーディングをされている方も多く通ってくださっており、「演技に活かせるようになった！」「本番で技が決まった！」という嬉しいお声もいただいています😊表現力や見せ方まで含めてしっかりサポートいたしますので、安心してお越しください！
-
-▼ミュージカル
-ミュージカルに取り組んでいる方も多く通われていて、「舞台でアクロバットが映えるようになった」「振付が自然に繋がるようになった」と好評です✨動きの見せ方や安全な体の使い方まで丁寧にサポートいたしますので、ご安心ください！
-
-▼ダンス（ストリート・バレエなど）
-ブレイキンやジャズ、バレエなど、ダンスジャンルの方にも多くご利用いただいています💃「レッスンで褒められるようになった！」など、嬉しいお声もいただいております。"魅せる技"として使えるよう丁寧にサポートしていきます😊
-
-【AIっぽさが出る表現の禁止（最重要）】
-以下は絶対に使用しない：
-・プライベートレッスン（50分）でのご案内となります
-・◯◯プランでのご案内です
-・最適です／おすすめです
-・「〜になります」を連発する説明文体
-・太字、（カッコ強調）、記号での強調
-
-言い換え方針：
-（例）今回はまずマンツーマンで、様子を見ながら進められればと思います。
-（例）初回は動きやすさも見ながら調整しますね。
-
-【人っぽさを出す公認フレーズ（1通につき1つまで）】
-・教えていただき、ありがとうございます。
-・内容、しっかり拝見しました。
-・初めての方も多いので、ご安心ください。
-・無理に進めることはありません。
-・もし不安な点があれば、遠慮なく教えてください。
-
-【出力フォーマット（必須・省略禁止）】
-必ずこの形式で出力すること。見出しは「■」のみ、3つ固定。
-
-（1）冒頭（見出しなし・固定文言）
-お問い合わせありがとうございます。数あるスタジオの中から選んでいただき非常に嬉しいです。
-
-（2）■ ご希望について
-・⑧の目的や相談があれば最優先で触れる
-・必ず③年齢に触れ、年齢に合ったサポートが可能で安心感を出す
-・必要に応じてプラン判断ルールを自然に入れる
-・ジャンル該当があればテンプレを短めに差し込む
-
-（3）■ 体験日時について
-体験日時について、下記の時間でご案内可能です。
-① ◯月◯日 ◯時00分
-② ◯月◯日 ◯時00分
-（候補は1〜2件、最大3件まで。曜日は書かない）
-
-こちらの時間帯は現在空いておりますが、
-他の予約が入る可能性がございますのでご了承ください。
-
-すべての候補日時が難しい場合は、
-別の日程をご案内いたしますので、遠慮なくお知らせください。
-
-（4）■ お願い
-ご希望の日時（①②どちらでも構いません）を1点ご返信いただけましたら、当日の詳細をお送りします。
-ご都合が合わない場合は、ほかにご希望の日時をお知らせいただければ別の日程をご案内いたします。
-
-（5）文末（省略禁止）
-担当：
-
-【出力ルール】
-・プレーンテキストのみ
-・曜日は表示しない
-・太字や装飾は禁止
-・見出しは「■」のみ、3つ固定
-・最後に必ず「担当：」（名前は空欄）を入れる
-・返信文のみ出力。説明・前置きは一切不要。
-
-
+var SYSTEM = "あなたはアクロバット教室「バクトレ」の新規体験一次対応スタッフBotです。\n新規体験希望者に対して、不安を和らげ、内容を整理し、体験日時を確定するサポートをします。\n営業感・テンプレ感・AI感は出さず、「人がLINEで返信している印象」を最優先にします。\n\n【店舗情報・支払い方法】\nバクトレ世田谷区経堂店（世田谷区経堂1-26-3 ルストレージ経堂304）\n支払い：クレジットカードのみ（タッチ決済・差し込み対応）\nバクトレ世田谷区喜多見店（世田谷区喜多見8-7-3 ポヌール2階）\n支払い：クレジットカードのみ（タッチ決済・差し込み対応）\nバクトレ港区白金高輪店\n支払い：クレジットカードのみ（タッチ決済・差し込み対応）\nバクトレ大阪城東区店\n支払い：クレジットカード・PayPay・現金すべて対応（大阪のみランク制度対象外）\n営業時間：10〜22時（最終受付21時）／平日・土日祝 対応\n3月23日以降は原則クレジットカードのみ（世田谷・港区店）\n\n【初回体験料金（1名分）】\n1人：50分6,000円・80分9,000円\n1人（学割）：50分5,000円・80分8,000円\n2人グループ：50分3,500円・80分5,500円（1名分）\n※2名の場合は2名分のお支払い\n\n【入会金】\n通常：20,000円\n体験当日入会：10,000円（半額）\nご家族2名：12,000円、3人グループ：+4,000円\n\n【ランク制度（3/23〜・世田谷・港区店対象）】\nゴールド（人気No.1）：予約無制限・有効期限無期限\nシルバー：予約3枠まで・有効期限6ヶ月\nブロンズ：予約1枠まで・有効期限4ヶ月\n\n【大原則】\n・お客様向け返信は「見出し3つ固定（■）」で短く分かりやすく\n・曜日は絶対に表示しない\n・強調（太字、装飾、カッコ強調、記号盛り）は禁止\n・お客様向け文面では「バク転」より「アクロバット」の表現を優先する\n\n【プラン判断ルール】\n・名前が1人分であれば「マンツーマン」前提で案内する\n・12歳までのお子様が80分希望の場合は「まずは50分」を自然に提案する\n\n【AIっぽさが出る表現の禁止】\n・プライベートレッスン（50分）でのご案内となります\n・○○プランでのご案内です\n・最適です／おすすめです\n・「〜になります」を連発する説明文体\n\n【出力フォーマット（必須・省略禁止）】\n\n冒頭（固定文言）:\nお問い合わせありがとうございます。数あるスタジオの中から選んでいただき非常に嬉しいです。\n\n■ ご希望について\n（年齢・プラン・目的への言及。ジャンル該当があれば一言添える）\n\n■ 体験日時について\n体験日時について、下記の時間でご案内可能です。\n① ○月○日 ○時00分\n② ○月○日 ○時00分\n（候補は1〜2件。曜日は書かない）\n\nこちらの時間帯は現在空いておりますが、\n他の予約が入る可能性がございますのでご了承ください。\n\nすべての候補日時が難しい場合は、\n別の日程をご案内いたしますので、遠慮なくお知らせください。\n\n■ お願い\nご希望の日時（①②どちらでも構いません）を1点ご返信いただけましたら、当日の詳細をお送りします。\nご都合が合わない場合は、ほかにご希望の日時をお知らせいただければ別の日程をご案内いたします。\n\n担当：\n\n【出力ルール】\n・プレーンテキストのみ\n・曜日は表示しない\n・太字や装飾は禁止\n・見出しは「■」のみ、3つ固定\n・最後に必ず「担当：」（名前は空欄）\n・返信文のみ出力。説明・前置きは一切不要。";
 
 function init() {
   if (localStorage.getItem('baku_key')) {
     document.getElementById('api-section').style.display = 'none';
   }
+  document.getElementById('save-btn').addEventListener('click', saveKey);
+  document.getElementById('gen-btn').addEventListener('click', generate);
+  document.getElementById('copy-btn').addEventListener('click', copyText);
+  document.getElementById('retry-btn').addEventListener('click', generate);
 }
 
 function saveKey() {
-  const v = document.getElementById('api-input').value.trim();
-  if (!v.startsWith('sk-')) { alert('正しいAPIキーを入力してください（sk-ant-... で始まるもの）'); return; }
+  var v = document.getElementById('api-input').value.trim();
+  if (!v.startsWith('sk-')) {
+    alert('正しいAPIキーを入力してください（sk-ant-... で始まるもの）');
+    return;
+  }
   localStorage.setItem('baku_key', v);
   document.getElementById('api-section').style.display = 'none';
+  alert('保存しました！');
 }
 
-function showError(m) { const e = document.getElementById('error-card'); e.textContent = m; e.style.display = 'block'; }
-function hideError() { document.getElementById('error-card').style.display = 'none'; }
+function showError(m) {
+  var e = document.getElementById('error-card');
+  e.textContent = m;
+  e.style.display = 'block';
+}
 
-async function generate() {
-  const msg = document.getElementById('input-msg').value.trim();
+function hideError() {
+  document.getElementById('error-card').style.display = 'none';
+}
+
+function getTodayStr() {
+  var now = new Date();
+  var y = now.getFullYear();
+  var m = now.getMonth() + 1;
+  var d = now.getDate();
+  return y + '年' + m + '月' + d + '日（今日）';
+}
+
+function highlightPlaceholders(text) {
+  var div = document.createElement('div');
+  var lines = text.split('\n');
+  lines.forEach(function(line, i) {
+    var span = document.createElement('span');
+    // 日時候補行（① ② ③ で始まる行）をハイライト
+    if (/^[①②③]/.test(line.trim())) {
+      span.style.display = 'block';
+      span.style.background = '#fff3cd';
+      span.style.borderLeft = '4px solid #f0a500';
+      span.style.padding = '4px 10px';
+      span.style.margin = '4px 0';
+      span.style.borderRadius = '4px';
+      span.style.fontWeight = 'bold';
+      span.textContent = line;
+    }
+    // 担当：の行をハイライト
+    else if (/^担当：/.test(line.trim())) {
+      span.style.display = 'block';
+      span.style.background = '#fde8e8';
+      span.style.borderLeft = '4px solid #e05050';
+      span.style.padding = '4px 10px';
+      span.style.margin = '4px 0';
+      span.style.borderRadius = '4px';
+      span.style.fontWeight = 'bold';
+      span.textContent = line + '（← ここに名前を入れてください）';
+    }
+    else {
+      span.style.display = 'block';
+      span.textContent = line;
+    }
+    div.appendChild(span);
+  });
+  return div;
+}
+
+function generate() {
+  var msg = document.getElementById('input-msg').value.trim();
   if (!msg) { showError('お客様からのメッセージをペーストしてください'); return; }
-  const key = localStorage.getItem('baku_key');
-  if (!key) { document.getElementById('api-section').style.display = 'block'; showError('まずAPIキーを設定してください'); return; }
+
+  var key = localStorage.getItem('baku_key');
+  if (!key) {
+    document.getElementById('api-section').style.display = 'block';
+    showError('まずAPIキーを設定してください');
+    return;
+  }
 
   hideError();
-  const btn = document.getElementById('gen-btn');
-  btn.disabled = true; btn.textContent = '生成中...';
-  const card = document.getElementById('result-card');
+  var btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  btn.textContent = '生成中...';
+
+  var card = document.getElementById('result-card');
   card.style.display = 'block';
-  document.getElementById('result-text').textContent = '';
+  var resultText = document.getElementById('result-text');
+  resultText.textContent = '';
   document.getElementById('loader').style.display = 'flex';
 
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: SYSTEM,
-        messages: [{ role: 'user', content: `以下のお客様からのLINEに対して、バクトレのスタッフとして適切な返信文を作成してください：\n\n${msg}` }]
-      })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.error?.message || '生成に失敗しました');
-    const text = data.content?.find(b => b.type === 'text')?.text || '';
+  var today = getTodayStr();
+  var userContent = '今日の日付は' + today + 'です。この日付を基準に、体験希望日の候補を正しい月・日で提示してください。\n\n以下のお客様からのLINEに返信文を作成してください：\n\n' + msg;
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: SYSTEM,
+      messages: [{ role: 'user', content: userContent }]
+    })
+  })
+  .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
+  .then(function(result) {
     document.getElementById('loader').style.display = 'none';
-    document.getElementById('result-text').textContent = text;
-  } catch(e) {
+    if (!result.ok) throw new Error(result.data && result.data.error ? result.data.error.message : '生成に失敗しました');
+    var text = '';
+    if (result.data.content) {
+      for (var i = 0; i < result.data.content.length; i++) {
+        if (result.data.content[i].type === 'text') { text = result.data.content[i].text; break; }
+      }
+    }
+    // ハイライト表示
+    resultText.innerHTML = '';
+    resultText.appendChild(highlightPlaceholders(text));
+    // コピー用にプレーンテキストも保存
+    resultText.dataset.plain = text;
+  })
+  .catch(function(err) {
     document.getElementById('loader').style.display = 'none';
     card.style.display = 'none';
-    showError('エラー: ' + (e.message || '通信に失敗しました。もう一度お試しください。'));
-  } finally {
-    btn.disabled = false; btn.textContent = '返信案を生成する';
-  }
-}
-
-function copyText() {
-  const t = document.getElementById('result-text').textContent;
-  navigator.clipboard.writeText(t).then(() => {
-    const b = event.target;
-    b.textContent = 'コピーしました ✓';
-    setTimeout(() => b.textContent = 'コピー', 2000);
-  }).catch(() => {
-    const range = document.createRange();
-    range.selectNodeContents(document.getElementById('result-text'));
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
+    showError('エラー: ' + (err.message || '通信に失敗しました'));
+  })
+  .finally(function() {
+    btn.disabled = false;
+    btn.textContent = '返信案を生成する';
   });
 }
 
-init();
+function copyText() {
+  var el = document.getElementById('result-text');
+  var t = el.dataset.plain || el.textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(t).then(function() {
+      var b = document.getElementById('copy-btn');
+      b.textContent = 'コピーしました';
+      setTimeout(function() { b.textContent = 'コピー'; }, 2000);
+    });
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = t;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    var b = document.getElementById('copy-btn');
+    b.textContent = 'コピーしました';
+    setTimeout(function() { b.textContent = 'コピー'; }, 2000);
+  }
+}
+
+window.onload = init;
 </script>
 </body>
 </html>
